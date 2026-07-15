@@ -28,8 +28,14 @@ COPY --from=uv /app/.venv /app/.venv
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Define environment variable for Duffel API key
-ENV DUFFEL_API_KEY_LIVE="your_duffel_live_api_key_here"
+# DUFFEL_API_KEY_LIVE is required at runtime (see src/flights/config/api.py) - set it on the
+# host/platform (e.g. Railway service variables), not baked in here.
+
+# This image is only used for network deployment (e.g. Railway) - default to Streamable HTTP
+# (see server.py). Package installs run via `uv run flights-mcp` (Claude Desktop, Smithery)
+# still default to stdio unless MCP_TRANSPORT is set, so this only affects this image.
+ENV MCP_TRANSPORT=streamable-http
+EXPOSE 8080
 
 # Start the MCP server
 ENTRYPOINT ["flights-mcp"]

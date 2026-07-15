@@ -48,6 +48,8 @@ class OfferEndpoints:
                     params=params,
                     json=request_data
                 )
+                if response.status_code >= 400:
+                    self.logger.error(f"Duffel API error {response.status_code}: {response.text}")
                 response.raise_for_status()
                 data = response.json()
                 

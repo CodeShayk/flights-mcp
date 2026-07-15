@@ -2,6 +2,7 @@
 
 import logging
 import os
+from mcp.server.transport_security import TransportSecuritySettings
 from .services.search import mcp
 
 # Set up logging
@@ -21,6 +22,13 @@ def main():
     if transport != "stdio":
         mcp.settings.host = os.environ.get("HOST", "0.0.0.0")
         mcp.settings.port = int(os.environ.get("PORT", 8080))
+        # The SDK's default DNS-rebinding protection only allows localhost Host headers,
+        # which rejects every request arriving through a public host like *.railway.app.
+        # That protection matters for locally-hosted servers reachable from a browser;
+        # it doesn't apply here, since this is only ever called server-to-server.
+        mcp.settings.transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False
+        )
     try:
         mcp.run(transport=transport)
     except Exception as e:

@@ -12,19 +12,18 @@ ENV UV_LINK_MODE=copy
 
 # Install the project's dependencies using the lockfile and settings
 COPY pyproject.toml uv.lock /app/
-RUN --mount=type=cache,id=cacheKey=uv-cache,target=/root/.cache/uv uv sync --frozen --no-install-project --no-dev --no-editable
+RUN --mount=type=cache,id=cacheKey-uv-cache,target=/root/.cache/uv uv sync --frozen --no-install-project --no-dev --no-editable
 
 # Then, add the rest of the project source code and install it
 # Installing separately from its dependencies allows optimal layer caching
 ADD src /app/src
-RUN --mount=type=cache,id=cacheKey=uv-cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable
+RUN --mount=type=cache,id=cacheKey-uv-cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable
 
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-COPY --from=uv /root/.local /root/.local
-COPY --from=uv --chown=app:app /app/.venv /app/.venv
+COPY --from=uv /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
